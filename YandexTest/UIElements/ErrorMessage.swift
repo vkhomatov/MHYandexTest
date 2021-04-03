@@ -87,8 +87,10 @@ class ErrorMessage: UIView {
     }
     
     func showError(reverse: Bool, message: String, delay: Double) {
+        DispatchQueue.main.async {
         self.errorMessageLabel.text = message
-        self.animationView(reverse: reverse, duration: 1.0, delay: delay, offsetY: errorHeight-6, opacity: 1.0)
+            self.animationView(reverse: reverse, duration: 1.0, delay: delay, offsetY: self.errorHeight-6, opacity: 1.0)
+        }
     }
     
     

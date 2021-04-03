@@ -48,30 +48,30 @@ class RealmService {
 //        return realm.object(ofType: type, forPrimaryKey: key)
 //    }
     
-//    static func saveTicker(ticker: Quote,
-//                     configuration: Realm.Configuration = deleteIfMigration,
-//                     update: Realm.UpdatePolicy = .modified)
-//    throws {
-//        let realm = try Realm(configuration: configuration)
-//        #if DEBUG
-//        print("Realm \(String(describing: configuration.fileURL?.description))" )
-//        #endif
-//        try realm.write {
-//            //item.segment = segment
-//            realm.add(ticker.self, update: update)
-//        }
-//    }
-    
-    static func getLabelsAndFavorites(_ type: LabelsAndFavourites.Type,
-                    configuration: Realm.Configuration = deleteIfMigration,
-                    update: Realm.UpdatePolicy = .modified)
-    throws -> LabelsAndFavourites? {
+    static func saveTicker(ticker: Quote, status: Bool,
+                     configuration: Realm.Configuration = deleteIfMigration,
+                     update: Realm.UpdatePolicy = .modified)
+    throws {
         let realm = try Realm(configuration: configuration)
         #if DEBUG
         print("Realm \(String(describing: configuration.fileURL?.description))" )
         #endif
-        if let labelsAndFavorites = realm.object(ofType: type, forPrimaryKey: "LabelsAndFavourites") {
-        return labelsAndFavorites//.sorted { $0.symbol < $1.symbol }
+        try realm.write {
+            ticker.starStatus = status
+            realm.add(ticker.self, update: update)
+        }
+    }
+    
+    static func getSearchLabels(_ type: SearchLabels.Type,
+                    configuration: Realm.Configuration = deleteIfMigration,
+                    update: Realm.UpdatePolicy = .modified)
+    throws -> SearchLabels? {
+        let realm = try Realm(configuration: configuration)
+        #if DEBUG
+        print("Realm \(String(describing: configuration.fileURL?.description))" )
+        #endif
+        if let searchLabels = realm.object(ofType: type, forPrimaryKey: "SearchLabels") {
+        return searchLabels//.sorted { $0.symbol < $1.symbol }
         } else {
             return nil
         }

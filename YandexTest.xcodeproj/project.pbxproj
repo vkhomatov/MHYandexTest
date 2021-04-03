@@ -67,13 +67,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		58BD304F26121EB900484AA6 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
 		58DBCAF9260A8909002AEFFC = {
 			isa = PBXGroup;
 			children = (
@@ -157,7 +150,6 @@
 				58DBCB5C260A951C002AEFFC /* StockTableViewCell.swift */,
 				58DBCB67260ACBFC002AEFFC /* StocksHeaderView.swift */,
 				58DBCB79260B1BA1002AEFFC /* StocksSearchView.swift */,
-				58BD304F26121EB900484AA6 /* Views */,
 			);
 			path = Stocks;
 			sourceTree = "<group>";

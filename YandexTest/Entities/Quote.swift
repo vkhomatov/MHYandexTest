@@ -19,10 +19,11 @@ class Quote: Object {
     @objc dynamic var logoStr: String = ""
     @objc dynamic var regularMarketOpen: Double = 0
     @objc dynamic var regularMarketPreviousClose: Double = 0
+    @objc dynamic var starStatus: Bool = false
+
     
     var coeffColor: UIColor = UIColor.systemGreen
     var logoImage = UIImage()
-    var starStatus: Bool = false
 
     var companyWebsite: String = "" {
         didSet {

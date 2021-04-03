@@ -15,11 +15,14 @@ class StocksModel {
     
     var firstTime: Bool = true
     var spinner = SpinnerView()
-    var myQuotes = [Quote]()
-    var allQuotes = [Quote]()
-    var searchQuotes = [Quote]()
-    var searchText = String()
     
+    var myQuotes = [Quote]()
+    var allQuotes = [Quote]() // didSet проверка на вхождение объетов со звездами
+    var searchQuotes = [Quote]() // didSet проверка на вхождение объектов со звездами
+    
+    
+    
+    var searchText = String()
     var mySearchLabels: [String] = [] {
         didSet {
             writeLabels(my: true)
@@ -39,7 +42,7 @@ class StocksModel {
     var stocksIndexPath: IndexPath?
     var favouriteIndexPath: IndexPath?
     var labelsDidShow: Bool = false
-    var labelsAndFavourites = LabelsAndFavourites()
+    var searchLabels = SearchLabels()
     private var counter: Int = 0
     
     
@@ -51,13 +54,13 @@ class StocksModel {
             case let .success(data):
                 self.allQuotes.append(contentsOf: data)
                 
-                DispatchQueue.main.async() {
+               // DispatchQueue.main.async() {
                     self.counter = 0
                     self.getLogoURLs(quotes: self.allQuotes, count: 25) {
                         try? RealmService.saveTickers(tickers: self.allQuotes)
                         completion(nil)
                     }
-                }
+               // }
                 completion(nil)
             case .failure(let error):
                 let errorText = error.localizedDescription.split(separator: ":").last
@@ -75,12 +78,12 @@ class StocksModel {
             switch result {
             case let .success(data):
                 self.searchQuotes = data
-                DispatchQueue.main.async() {
+              //  DispatchQueue.main.async() {
                     self.counter = 0
                     self.getLogoURLs(quotes: self.searchQuotes, count: self.searchQuotes.count) {
                         completion(nil)
                     }
-                }
+              //  }
                 completion(nil)
             case .failure(let error):
                 let errorText = error.localizedDescription.split(separator: ":").last
@@ -133,43 +136,43 @@ class StocksModel {
         guard let realm = try? Realm(configuration: Realm.Configuration(deleteRealmIfMigrationNeeded: true)) else { fatalError() }
         try? realm.write {
             if my {
-                labelsAndFavourites.yoursSymbols = mySearchLabels
+                searchLabels.yoursSymbols = mySearchLabels
             } else {
-                labelsAndFavourites.popularSymbols = popularSearchLabels
+                searchLabels.popularSymbols = popularSearchLabels
             }
-            realm.add(labelsAndFavourites, update: .modified)
+            realm.add(searchLabels, update: .modified)
         }
     }
     
     
-    func writeFavourites(index: Int, status: Bool) {
-        guard let realm = try? Realm(configuration: Realm.Configuration(deleteRealmIfMigrationNeeded: true)) else { fatalError() }
-        try? realm.write {
-            if status {
-                if !labelsAndFavourites.favourites.contains(allQuotes[index].symbol) {
-                    labelsAndFavourites.favourites.append(allQuotes[index].symbol)
-                }
-            } else {
-                labelsAndFavourites.favourites = labelsAndFavourites.favourites.filter { $0 != allQuotes[index].symbol }
-            }
-            realm.add(labelsAndFavourites, update: .modified)
-            
-        }
-    }
+//    func writeFavourites(index: Int, status: Bool) {
+//        guard let realm = try? Realm(configuration: Realm.Configuration(deleteRealmIfMigrationNeeded: true)) else { fatalError() }
+//        try? realm.write {
+//            if status {
+//                if !labelsAndFavourites.favourites.contains(allQuotes[index].symbol) {
+//                    labelsAndFavourites.favourites.append(allQuotes[index].symbol)
+//                }
+//            } else {
+//                labelsAndFavourites.favourites = labelsAndFavourites.favourites.filter { $0 != allQuotes[index].symbol }
+//            }
+//            realm.add(labelsAndFavourites, update: .modified)
+//
+//        }
+//    }
     
     
-    func setFavorites(quotes: [Quote]) {
-        if let labelsAndFavourites = try? RealmService.getLabelsAndFavorites(LabelsAndFavourites.self) {
-            self.labelsAndFavourites = labelsAndFavourites
-            for quote in quotes {
-                for label in labelsAndFavourites.favourites {
-                    if quote.symbol == label {
-                        quote.starStatus = true
-                    }
-                }
-            }
-        }
-    }
+//    func setFavorites(quotes: [Quote]) {
+//        if let labelsAndFavourites = try? RealmService.getLabelsAndFavorites(LabelsAndFavourites.self) {
+//            self.labelsAndFavourites = labelsAndFavourites
+//            for quote in quotes {
+//                for label in labelsAndFavourites.favourites {
+//                    if quote.symbol == label {
+//                        quote.starStatus = true
+//                    }
+//                }
+//            }
+//        }
+//    }
     
 }
 

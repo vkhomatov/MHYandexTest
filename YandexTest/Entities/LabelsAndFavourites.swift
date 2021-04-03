@@ -1,5 +1,5 @@
 //
-//  SearchAnfFavourites.swift
+//  SearchLabels.swift
 //  YandexTest
 //
 //  Created by Vitaly Khomatov on 28.03.2021.
@@ -10,23 +10,23 @@ import SwiftyJSON
 import RealmSwift
 import UIKit
 
-class LabelsAndFavourites: Object {
+class SearchLabels: Object {
 
-    @objc dynamic var id: String = "LabelsAndFavourites"
+    @objc dynamic var id: String = "SearchLabels"
 
     @objc dynamic var dataDate =  Date()
     
-    var _favourites = List<String>()
-    
-    var favourites: [String] {
-        get {
-            return _favourites.map { $0 }
-        }
-        set {
-            _favourites.removeAll()
-            _favourites.append(objectsIn: newValue.map { $0 })
-        }
-    }
+//    var _favourites = List<String>()
+//
+//    var favourites: [String] {
+//        get {
+//            return _favourites.map { $0 }
+//        }
+//        set {
+//            _favourites.removeAll()
+//            _favourites.append(objectsIn: newValue.map { $0 })
+//        }
+//    }
 
     var _popularSymbols = List<String>()
     
@@ -53,7 +53,7 @@ class LabelsAndFavourites: Object {
     }
     
     override static func ignoredProperties() -> [String] {
-        return ["popularSymbols", "yoursSymbols", "favourites"]
+        return ["popularSymbols", "yoursSymbols"/*, "favourites"*/]
     }
     
     convenience init(from json: JSON) {

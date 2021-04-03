@@ -29,10 +29,11 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
         setupSearchView()
         setCallbacks()
         startNetworkMonitor()
-        getLabesAndFavourite()
+        getFavoriteQuotes()
+        getSearchLabes()
         loadTickers(readRealm: true)
         getPopularSearchLabels()
-        message()
+        //message()
     }
    
     
@@ -75,12 +76,65 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
     }
     
     
+    func setFavoriteQuotes(quotes: [Quote]) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            
+            for fnum in 0..<self.model.myQuotes.count {
+                for qnum in 0..<quotes.count {
+                    if self.model.myQuotes[fnum] == quotes[qnum] {
+                        try? RealmService.saveTicker(ticker: quotes[qnum], status: true)
+                    }
+                }
+            }
+            
+//            self.model.myQuotes.forEach { quote in
+//                if let index = quotes.firstIndex(of: quote) {
+//                    try? RealmService.saveTicker(ticker: quotes[index], status: true)
+//                }
+//            }
+            
+            
+        }
+    }
+    
+    func getFavoriteQuotes() {
+        if let quotes = try? RealmService.getTickers(Quote.self) {
+            self.model.myQuotes = quotes.filter {$0.starStatus == true}
+            print("Фавориты: \(self.model.myQuotes)")
+        }
+    }
+    
     private func setCallbacks() {
         headerView.buttonCallback = { [weak self] state in
             guard let self = self else { return }
             switch state {
             case .favourite:
-                self.model.myQuotes = self.model.allQuotes.filter {$0.starStatus == true}
+                //self.model.myQuotes = self.model.allQuotes.filter {$0.starStatus == true}
+              //  self.model.myQuotes = try? RealmService.getTickers(<#T##type: Quote.Type##Quote.Type#>)
+                self.getFavoriteQuotes()
+               
+                    
+//                    self.model.allQuotes.forEach { quote in
+//                        for realmQuote in self.model.myQuotes {
+//                            if quote == realmQuote {
+//                                quote.starStatus = realmQuote.starStatus
+//                            }
+//                        }
+//                    }
+                    
+//                    self.model.myQuotes.forEach { quote in
+//                        if let index = self.model.allQuotes.firstIndex(of: quote) {
+//                            self.model.allQuotes[index].starStatus = true
+//                        }
+//                    }
+                    
+                    
+                //}
+                
+                
+                
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
                 }
@@ -88,7 +142,7 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
                     self.tableView.scrollToRow(at: index, at: .none, animated: false)
                 }
             case .stocks:
-                self.model.setFavorites(quotes: self.model.allQuotes)
+              //  self.model.setFavorites(quotes: self.model.allQuotes)
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
                     if let index = self.model.stocksIndexPath, index.row < self.model.allQuotes.count {
@@ -166,9 +220,8 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
                     model.loadQuotes(symbol: text) {  [weak self] (message) in
                         guard let self = self else { return }
                         if let error = message {
-                            DispatchQueue.main.async {
                                 self.spinnerStop()
-                                self.model.isLoading = false }
+                                self.model.isLoading = false
                             if self.model.allQuotes.count > 0  {
                                 self.model.searchQuotes =  self.model.allQuotes.filter( { $0.symbol.prefix(text.count).description.lowercased() == text.lowercased() } )
                                 
@@ -179,19 +232,35 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
                                 }
                                 
                                 self.model.search = true
+                                DispatchQueue.main.async {
+
                                 self.tableView.reloadData()
+                                }
                             } else {
                                 self.showError(message: error)
                             }
                         } else {
-                            DispatchQueue.main.async { [weak self] in
-                                guard let self = self else { return }
-                                self.model.setFavorites(quotes: self.model.searchQuotes)
-                                self.tableView.reloadData()
+                            self.setFavoriteQuotes(quotes: self.model.searchQuotes)
+
+                           
+                          //      self.model.setFavorites(quotes: self.model.searchQuotes)
+                               /* for num in 0..<self.model.myQuotes.count {
+                                      if self.model.myQuotes[num].symbol == self.model.searchQuotes[num].symbol {
+                                         // self.model.allQuotes[num].starStatus = self.model.searchQuotes[indexPath.row].starStatus
+                                          try? RealmService.saveTicker(ticker: self.model.allQuotes[num], status: self.model.searchQuotes[indexPath.row].starStatus)
+                                          //self.model.writeFavourites(index: num, status: status)
+                                         // present = true
+                                          break
+                                      }
+                                  } */
+                                
                                 self.spinnerStop()
                                 self.model.isLoading = false
+                            DispatchQueue.main.async {
+                            self.tableView.reloadData()
                             }
-                        }
+                            }
+                        
                     }
                     model.search = true
                 }
@@ -268,39 +337,83 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
         
         cell.starButtonCallback = { [weak self] status in
             guard let self = self else { return }
-            if !self.model.search {
+            
+            
+            
+            switch self.headerView.state {
+            case .stocks:
+                print(self.headerView.state)
+                try? RealmService.saveTicker(ticker: self.model.allQuotes[indexPath.row], status: status)
+                self.getFavoriteQuotes()
+                
+            case .favourite:
+                print(self.headerView.state)
+                if let index = self.model.allQuotes.firstIndex(of: self.model.myQuotes[indexPath.row]) {
+                    try? RealmService.saveTicker(ticker: self.model.allQuotes[index], status: status)
+                } else {
+                    try? RealmService.saveTicker(ticker: self.model.myQuotes[indexPath.row], status: status)
+                }
+                self.model.myQuotes.remove(at: indexPath.row)
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+            case .search:
+                print(self.headerView.state)
+                
+                
+                if let index = self.model.allQuotes.firstIndex(of: self.model.searchQuotes[indexPath.row]) {
+                    try? RealmService.saveTicker(ticker: self.model.allQuotes[index], status: status)
+                }
+                
+//                if let index = self.model.myQuotes.firstIndex(of: self.model.searchQuotes[indexPath.row]) {
+//                    try? RealmService.saveTicker(ticker: self.model.myQuotes[index], status: status)
+//                    self.model.myQuotes.remove(at: index)
+//                }
+//                
+                
+                try? RealmService.saveTicker(ticker: self.model.searchQuotes[indexPath.row], status: status)
+                
+            }
+            
+            
+            
+       /*     if !self.model.search {
                 // объекты из основной таблицы, не режим поиска
                 if self.headerView.state == .favourite {
                     if let index = self.model.allQuotes.firstIndex(of: self.model.myQuotes[indexPath.row]) {
-                        self.model.allQuotes[index].starStatus = status
-                        self.model.writeFavourites(index: index, status: status)
+                       // self.model.allQuotes[index].starStatus = status
+                        try? RealmService.saveTicker(ticker: self.model.allQuotes[index], status: status)
+                      //  self.model.writeFavourites(index: index, status: status)
                     }
                     self.model.myQuotes.remove(at: indexPath.row)
                     DispatchQueue.main.async {
                         self.tableView.reloadData()
                     }
                 } else if self.headerView.state == .stocks {
-                    self.model.allQuotes[indexPath.row].starStatus = status
-                    self.model.writeFavourites(index: indexPath.row, status: status)
+                    try? RealmService.saveTicker(ticker: self.model.allQuotes[indexPath.row], status: status)
                 }
                 
                 // режим поиска
             } else {
+                print(self.headerView.state)
                 var present: Bool = false
                 self.model.searchQuotes[indexPath.row].starStatus = status
                 for num in 0..<self.model.allQuotes.count {
                     if self.model.allQuotes[num].symbol == self.model.searchQuotes[indexPath.row].symbol {
-                        self.model.allQuotes[num].starStatus = self.model.searchQuotes[indexPath.row].starStatus
-                        self.model.writeFavourites(index: num, status: status)
+                       // self.model.allQuotes[num].starStatus = self.model.searchQuotes[indexPath.row].starStatus
+                        try? RealmService.saveTicker(ticker: self.model.allQuotes[num], status: self.model.searchQuotes[indexPath.row].starStatus)
+                        //self.model.writeFavourites(index: num, status: status)
                         present = true
                         break
                     }
                 }
                 if !present {
                     self.model.allQuotes.append(self.model.searchQuotes[indexPath.row])
-                    self.model.writeFavourites(index: indexPath.row, status: status)
+                   // self.model.writeFavourites(index: indexPath.row, status: status)
+                    try? RealmService.saveTicker(ticker: self.model.searchQuotes[indexPath.row], status: status)
+
                 }
-            }
+            } */
         }
         
         if !model.search {
@@ -363,23 +476,25 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
         model.loadQuoteCollections(start: start) {  [weak self] (message) in
             guard let self = self else { return }
             if let error = message {
-                DispatchQueue.main.async {
+             
                     self.spinnerStop()
                     self.model.isLoading = false
                     
                     if let readRealm = readRealm, readRealm == true {
                         if let quote = try? RealmService.getTickers(Quote.self) {
                             self.model.allQuotes = quote
+                            DispatchQueue.main.async {
                             self.tableView.reloadData()
+                            }
                             #if DEBUG
                             print("Characters load from Realm")
                             #endif
-                            self.model.setFavorites(quotes: self.model.allQuotes)
-                            self.showError(message: "Дата последнего обновления базы: \(self.model.labelsAndFavourites.getFullDateString(from: self.model.labelsAndFavourites.dataDate))")
+                           // self.model.setFavorites(quotes: self.model.allQuotes)
+                            self.showError(message: "Дата последнего обновления базы: \(self.model.searchLabels.getFullDateString(from: self.model.searchLabels.dataDate))")
                             
 
                         }
-                    }
+                    
                 }
                 self.showError(message: error)
 
@@ -389,23 +504,32 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
                 #endif
                 
             } else {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
+                self.setFavoriteQuotes(quotes: self.model.allQuotes)
+
+                 
                     self.spinnerStop()
                     self.model.isLoading = false
-                    self.model.setFavorites(quotes: self.model.allQuotes)
+                   // self.model.setFavorites(quotes: self.model.allQuotes)
+                    
+                DispatchQueue.main.async {
                     self.tableView.reloadData()
+                }
                     try? RealmService.saveTickers(tickers: self.model.allQuotes)
                 }
-            }
+            
             
         }
     }
     
     
-    fileprivate func getLabesAndFavourite() {
-        if let labelsAndFavourites = try? RealmService.getLabelsAndFavorites(LabelsAndFavourites.self) {
-            model.labelsAndFavourites = labelsAndFavourites
+    
+    func setStarStatus() {
+        
+    }
+    
+    fileprivate func getSearchLabes() {
+        if let searchLabels = try? RealmService.getSearchLabels(SearchLabels.self) {
+            model.searchLabels = searchLabels
 //            model.popularSearchLabels = labelsAndFavourites.popularSymbols
 //            model.mySearchLabels = labelsAndFavourites.yoursSymbols
 //            searchView.yoursStrings = model.mySearchLabels
@@ -459,11 +583,13 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
     
     fileprivate func spinnerStop() {
         if model.spinnerWork {
-            model.spinner.stop()
-            model.spinner.removeFromSuperview()
-            for cell in self.tableView.visibleCells { cell.layer.opacity = 1 }
-            self.tableView.isUserInteractionEnabled = true
-            model.spinnerWork.toggle()
+            DispatchQueue.main.async {
+                self.model.spinner.stop()
+                self.model.spinner.removeFromSuperview()
+                for cell in self.tableView.visibleCells { cell.layer.opacity = 1 }
+                self.tableView.isUserInteractionEnabled = true
+                self.model.spinnerWork.toggle()
+            }
         }
     }
     

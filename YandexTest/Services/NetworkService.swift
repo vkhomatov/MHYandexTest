@@ -108,7 +108,7 @@ class NetworkService {
         }
     }
     
-    func getMostWatchedLabels(completion: ((Swift.Result<[LabelsAndFavourites], Error>) -> Void)? = nil) {
+    func getMostWatchedLabels(completion: ((Swift.Result<[SearchLabels], Error>) -> Void)? = nil) {
         
         urlConstructor.path = "/api/v1/tr/trending"
         
@@ -120,7 +120,7 @@ class NetworkService {
             case let .success(data):
                 let json = JSON(data)
                 let mostJSONs = json.arrayValue
-                let most = mostJSONs.map { LabelsAndFavourites(from: $0) }
+                let most = mostJSONs.map { SearchLabels(from: $0) }
                 completion?(.success(most))
             case let .failure(error):
                 completion?(.failure(error))
