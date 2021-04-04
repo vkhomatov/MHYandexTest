@@ -17,24 +17,26 @@ class StocksModel {
     var spinner = SpinnerView()
     
     var myQuotes = [Quote]()
+    //var myNewQuotes = [Quote]()
     var allQuotes = [Quote]() // didSet проверка на вхождение объетов со звездами
     var searchQuotes = [Quote]() // didSet проверка на вхождение объектов со звездами
     
     
     
     var searchText = String()
-    var mySearchLabels: [String] = [] {
-        didSet {
-            writeLabels(my: true)
-        }
-    }
-    var popularSearchLabels: [String] = [] {
-        didSet {
-            if popularSearchLabels.count != 0 {
-                writeLabels(my: false)
-            }
-        }
-    }
+    
+//    var mySearchLabels: [String] = [] {
+//        didSet {
+//            writeLabels(my: true)
+//        }
+//    }
+//    var popularSearchLabels: [String] = [] {
+//        didSet {
+//            if popularSearchLabels.count != 0 {
+//                writeLabels(my: false)
+//            }
+//        }
+//    }
     
     var isLoading: Bool = false
     var search: Bool = false
@@ -54,13 +56,11 @@ class StocksModel {
             case let .success(data):
                 self.allQuotes.append(contentsOf: data)
                 
-               // DispatchQueue.main.async() {
                     self.counter = 0
                     self.getLogoURLs(quotes: self.allQuotes, count: 25) {
                         try? RealmService.saveTickers(tickers: self.allQuotes)
                         completion(nil)
                     }
-               // }
                 completion(nil)
             case .failure(let error):
                 let errorText = error.localizedDescription.split(separator: ":").last
@@ -77,13 +77,12 @@ class StocksModel {
             guard let self = self else { return }
             switch result {
             case let .success(data):
-                self.searchQuotes = data
-              //  DispatchQueue.main.async() {
+                    self.searchQuotes = data
                     self.counter = 0
                     self.getLogoURLs(quotes: self.searchQuotes, count: self.searchQuotes.count) {
                         completion(nil)
                     }
-              //  }
+               
                 completion(nil)
             case .failure(let error):
                 let errorText = error.localizedDescription.split(separator: ":").last
@@ -96,15 +95,126 @@ class StocksModel {
     }
     
     
+    func reloadFavoriteTickers(oldQuotes: [Quote], completion: @escaping (String?) -> ()) {
+        
+       // var symbol = String()
+        
+      //  oldQuotes.forEach { symbol += ($0.symbol + ",") }
+        
+       // print("Строка обновления тикеров: \(symbol)")
+        
+
+        let apicount = 40
+        let count = oldQuotes.count % apicount == 0 ? oldQuotes.count/apicount : oldQuotes.count/apicount + 1
+        
+        var tickers = [Int: String]()
+        var symbols = String()
+        
+        for i in 0..<count {
+            symbols.removeAll()
+            for num in apicount*i..<apicount*(i+1) {
+                symbols += oldQuotes[num].symbol + ","
+                if num == oldQuotes.count-1 { break }
+            }
+            tickers.updateValue(symbols, forKey: i)
+        }
+        
+       // print(tickers)
+        
+   
+        for i in 0..<count {
+            print("Обновление тикеров: \(String(describing: tickers[i]))")
+        networkService.getQuotes(symbol: tickers[i] ?? symbols)  { /*[weak self]*/ result in
+          //  guard let self = self else { return }
+            switch result {
+            case let .success(data):
+                print("DATA = \(data)")
+                
+                for newnum in 0..<data.count {
+                    for oldnum in apicount*i..<apicount*i+data.count {
+                        if data[newnum].symbol == oldQuotes[oldnum].symbol {
+                            
+                            guard let realm = try? Realm(configuration: Realm.Configuration(deleteRealmIfMigrationNeeded: true)) else { fatalError() }
+                            try? realm.write {
+                                print("Старые данные: \(oldQuotes[oldnum].regularMarketOpen)")
+                                print("Старые данные: \(oldQuotes[oldnum].regularMarketPreviousClose)")
+
+                                oldQuotes[oldnum].regularMarketOpen = data[newnum].regularMarketOpen
+                                oldQuotes[oldnum].regularMarketPreviousClose = data[newnum].regularMarketPreviousClose
+                                realm.add(oldQuotes[oldnum], update: .modified)
+                                
+                                print("Новые данные: \(data[newnum].regularMarketOpen)")
+                                print("Новые данные: \(data[newnum].regularMarketPreviousClose)")
+                                
+                            }
+                        }
+                    }
+                }
+                 
+               /* data.forEach { quote in
+                    oldQuotes.forEach { oquote in
+                        if oquote.symbol == quote.symbol {
+                            guard let realm = try? Realm(configuration: Realm.Configuration(deleteRealmIfMigrationNeeded: true)) else { fatalError() }
+                            try? realm.write {
+                                print("Старые данные: \(oquote.regularMarketOpen)")
+                                print("Старые данные: \(oquote.regularMarketPreviousClose)")
+
+                                oquote.regularMarketOpen = quote.regularMarketOpen
+                                oquote.regularMarketPreviousClose = quote.regularMarketPreviousClose
+                                realm.add(oquote, update: .modified)
+                                
+                                print("Новые данные: \(quote.regularMarketOpen)")
+                                print("Новые данные: \(quote.regularMarketPreviousClose)")
+                            }
+                        }
+                    }
+                    
+                    
+                 /*   if let index = oldQuotes.firstIndex(of: quote) {
+                        
+                        guard let realm = try? Realm(configuration: Realm.Configuration(deleteRealmIfMigrationNeeded: true)) else { fatalError() }
+                        try? realm.write {
+                            print("Старые данные: \(oldQuotes[index].regularMarketOpen)")
+                            print("Старые данные: \(oldQuotes[index].regularMarketPreviousClose)")
+
+                            oldQuotes[index].regularMarketOpen = quote.regularMarketOpen
+                            oldQuotes[index].regularMarketPreviousClose = quote.regularMarketPreviousClose
+                            realm.add(quote, update: .modified)
+                            
+                            print("Новые данные: \(quote.regularMarketOpen)")
+                            print("Новые данные: \(quote.regularMarketPreviousClose)")
+                        }
+                       
+                    } */
+                } */
+                
+                
+                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                completion(nil)
+            case .failure(let error):
+                let errorText = error.localizedDescription.split(separator: ":").last
+                completion(errorText?.description)
+                #if DEBUG
+                print(error.localizedDescription)
+                #endif
+            }
+        }
+        }
+        
+    }
+    
     func loadCompanyInfo(quote: Quote, completion: @escaping (String?) -> ()) {
         networkService.getCompanyInfo(symbol: quote.symbol)  { result in
             switch result {
             case let .success(data):
+                
                 guard let realm = try? Realm(configuration: Realm.Configuration(deleteRealmIfMigrationNeeded: true)) else { fatalError() }
                 try? realm.write {
                     quote.companyWebsite = data.companyWebsite
                     realm.add(quote, update: .modified)
                 }
+                
+                
                 completion(nil)
             case .failure(let error):
                 let errorText = error.localizedDescription.split(separator: ":").last
@@ -132,18 +242,18 @@ class StocksModel {
         }
     }
     
-    func writeLabels(my: Bool) {
-        guard let realm = try? Realm(configuration: Realm.Configuration(deleteRealmIfMigrationNeeded: true)) else { fatalError() }
-        try? realm.write {
-            if my {
-                searchLabels.yoursSymbols = mySearchLabels
-            } else {
-                searchLabels.popularSymbols = popularSearchLabels
-            }
-            realm.add(searchLabels, update: .modified)
-        }
-    }
-    
+//    func writeLabels(my: Bool) {
+//        guard let realm = try? Realm(configuration: Realm.Configuration(deleteRealmIfMigrationNeeded: true)) else { fatalError() }
+//        try? realm.write {
+//            if my {
+//                searchLabels.yoursSymbols = mySearchLabels
+//            } else {
+//                searchLabels.popularSymbols = popularSearchLabels
+//            }
+//            realm.add(searchLabels, update: .modified)
+//        }
+//    }
+//    
     
 //    func writeFavourites(index: Int, status: Bool) {
 //        guard let realm = try? Realm(configuration: Realm.Configuration(deleteRealmIfMigrationNeeded: true)) else { fatalError() }

@@ -40,12 +40,12 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
     // MARK: - NetworkMonitor
     func startNetworkMonitor() {
         if !network.getNetworkStatus() {
-            self.showError(message: "Offline Mode")
+            self.showError(message: "Offline Mode", delay: 2)
         }
         #if targetEnvironment(simulator)
         network.monitor.pathUpdateHandler = { path in
             if path.status == .unsatisfied  {
-                self.showError(message: "Online Mode")
+                self.showError(message: "Online Mode", delay: 2)
                 if self.model.allQuotes.count < 25 {
                     self.loadTickers(readRealm: true)
                 } else {
@@ -54,7 +54,7 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
                     }
                 }
             } else if path.status == .satisfied {
-                self.showError(message: "Offline Mode")
+                self.showError(message: "Offline Mode", delay: 2)
             }
         }
         #else
@@ -102,7 +102,7 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
     func getFavoriteQuotes() {
         if let quotes = try? RealmService.getTickers(Quote.self) {
             self.model.myQuotes = quotes.filter {$0.starStatus == true}
-            print("Фавориты: \(self.model.myQuotes)")
+           // print("Фавориты: \(self.model.myQuotes)")
         }
     }
     
@@ -114,8 +114,12 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
                 //self.model.myQuotes = self.model.allQuotes.filter {$0.starStatus == true}
               //  self.model.myQuotes = try? RealmService.getTickers(<#T##type: Quote.Type##Quote.Type#>)
                 self.getFavoriteQuotes()
-               
+                
+                
+                self.updateFavoruriteTickets(oldQuotes: self.model.myQuotes)
+
                     
+                
 //                    self.model.allQuotes.forEach { quote in
 //                        for realmQuote in self.model.myQuotes {
 //                            if quote == realmQuote {
@@ -237,7 +241,7 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
                                 self.tableView.reloadData()
                                 }
                             } else {
-                                self.showError(message: error)
+                                self.showError(message: error, delay: 2)
                             }
                         } else {
                             self.setFavoriteQuotes(quotes: self.model.searchQuotes)
@@ -281,7 +285,7 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
     }
     
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
-        if model.popularSearchLabels.count > 0 || model.mySearchLabels.count > 0  {
+        if model.searchLabels.popularSymbols.count > 0 || model.searchLabels.yoursSymbols.count > 0 {
             showLabels(popularStrings: searchView.popularStrings.count, yoursStrings: searchView.yoursStrings.count)
         }
     }
@@ -490,13 +494,13 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
                             print("Characters load from Realm")
                             #endif
                            // self.model.setFavorites(quotes: self.model.allQuotes)
-                            self.showError(message: "Дата последнего обновления базы: \(self.model.searchLabels.getFullDateString(from: self.model.searchLabels.dataDate))")
+                            self.showError(message: "Дата последнего обновления базы: \(self.model.searchLabels.getFullDateString(from: self.model.searchLabels.dataDate))", delay: 4)
                             
 
                         }
                     
                 }
-                self.showError(message: error)
+                self.showError(message: error, delay: 2)
 
 
                 #if DEBUG
@@ -523,8 +527,28 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
     
     
     
-    func setStarStatus() {
-        
+    private func updateFavoruriteTickets(oldQuotes: [Quote]) {
+        self.model.isLoading = true
+        self.spinnerStart(message: "Update data")
+        self.model.reloadFavoriteTickers(oldQuotes: oldQuotes) { [weak self] message in
+            guard let self = self else { return }
+            if let error = message {
+                self.spinnerStop()
+                self.model.isLoading = false
+                self.showError(message: error, delay: 2)
+                
+                print("Ошибка обновления тикеров \(error)")
+            } else {
+                self.spinnerStop()
+                self.model.isLoading = false
+                // self.model.setFavorites(quotes: self.model.allQuotes)
+                
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+                print("Обновления тикеров завершено")
+            }
+        }
     }
     
     fileprivate func getSearchLabes() {
@@ -542,11 +566,16 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
         model.networkService.getMostWatchedLabels { result in
             switch result {
             case let .success(data):
-                self.model.popularSearchLabels = data[0].popularSymbols
-                self.searchView.popularStrings = self.model.popularSearchLabels
+                
+                try? RealmService.saveSearchLabels(searchLabels: self.model.searchLabels, labels: data[0].popularSymbols, my: false)
+                
+               // self.model.popularSearchLabels = data[0].popularSymbols
+                self.searchView.popularStrings = self.model.searchLabels.popularSymbols
+                
             case .failure(let error):
-                self.showError(message: error.localizedDescription.split(separator: ":").last?.description ?? error.localizedDescription)
-               // self.getLabesAndFavourite()
+                self.showError(message: error.localizedDescription.split(separator: ":").last?.description ?? error.localizedDescription, delay: 2)
+               // self.getSearchLabes()
+                self.searchView.popularStrings = self.model.searchLabels.popularSymbols
                 #if DEBUG
                 print(error.localizedDescription.split(separator: ":").last as Any)
                 #endif
@@ -593,12 +622,10 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
         }
     }
     
-    fileprivate func showError(message: String) {
-        DispatchQueue.main.async {
+    fileprivate func showError(message: String, delay: Double) {
             guard let navcontroller = self.navigationController?.view else { return }
             let errorMessage = ErrorMessage(view: navcontroller)
-            errorMessage.showError(reverse: true, message: message, delay: 2.0)
-        }
+            errorMessage.showError(reverse: true, message: message, delay: delay)
     }
     
     fileprivate func hideLabels() {
