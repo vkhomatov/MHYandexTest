@@ -34,7 +34,7 @@ class StocksViewController: UIViewController, UISearchBarDelegate, UISearchResul
         getSearchLabes()
         loadTickers(readRealm: true)
         getPopularSearchLabels()
-       // message()
+        message()
     }
     
     
