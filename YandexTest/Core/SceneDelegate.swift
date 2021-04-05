@@ -50,6 +50,26 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneWillEnterForeground(_ scene: UIScene) {
         // Called as the scene transitions from the background to the foreground.
         // Use this method to undo the changes made on entering the background.
+        
+//        switch viewController.headerView.state {
+//        case .stocks:
+//            DispatchQueue.main.async {
+//                if self.viewController.model.allQuotes.count > 0 {
+//                    self.viewController.updateQuotesData(oldQuotes: self.viewController.model.allQuotes)
+//                } else {
+//                    self.viewController.loadTickers(readRealm: true)
+//                }
+//            }
+//        case .favourite:
+//            DispatchQueue.main.async {
+//                if self.viewController.model.myQuotes.count > 0 {
+//                    self.viewController.updateQuotesData(oldQuotes: self.viewController.model.myQuotes)
+//                }
+//            }
+//        case .search:
+//            break
+//        }
+
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {

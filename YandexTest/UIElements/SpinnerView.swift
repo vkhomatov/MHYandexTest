@@ -57,11 +57,11 @@ class SpinnerView: UIView {
         self.addSubview(messageLabel)
     }
     
-    func start() {
+    public func start() {
         spinner.startAnimating()
     }
     
-    func stop() {
+    public func stop() {
         spinner.stopAnimating()
     }
 }

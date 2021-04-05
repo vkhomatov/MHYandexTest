@@ -50,19 +50,6 @@ class RealmService {
         }
     }
     
-    //    static func getTicker(_ type: Quote.Type, key: String,
-    //                    configuration: Realm.Configuration = deleteIfMigration,
-    //                    update: Realm.UpdatePolicy = .modified)
-    //    throws -> Quote? {
-    //        let realm = try Realm(configuration: configuration)
-    //        #if DEBUG
-    //        print("Realm \(String(describing: configuration.fileURL?.description))" )
-    //        #endif
-    //        return realm.object(ofType: type, forPrimaryKey: key)
-    //    }
-    
-    
-    
     static func getSearchLabels(_ type: SearchLabels.Type,
                                 configuration: Realm.Configuration = deleteIfMigration,
                                 update: Realm.UpdatePolicy = .modified)
@@ -88,7 +75,7 @@ class RealmService {
         #endif
         try realm.write {
             if my {
-                searchLabels.yoursSymbols = labels
+                searchLabels.yoursSymbols.append(contentsOf: labels)
             } else {
                 searchLabels.popularSymbols = labels
             }

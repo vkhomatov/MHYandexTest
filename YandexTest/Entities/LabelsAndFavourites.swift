@@ -15,18 +15,6 @@ class SearchLabels: Object {
     @objc dynamic var id: String = "SearchLabels"
 
     @objc dynamic var dataDate =  Date()
-    
-//    var _favourites = List<String>()
-//
-//    var favourites: [String] {
-//        get {
-//            return _favourites.map { $0 }
-//        }
-//        set {
-//            _favourites.removeAll()
-//            _favourites.append(objectsIn: newValue.map { $0 })
-//        }
-//    }
 
     var _popularSymbols = List<String>()
     
@@ -53,7 +41,7 @@ class SearchLabels: Object {
     }
     
     override static func ignoredProperties() -> [String] {
-        return ["popularSymbols", "yoursSymbols"/*, "favourites"*/]
+        return ["popularSymbols", "yoursSymbols"]
     }
     
     convenience init(from json: JSON) {
@@ -64,9 +52,8 @@ class SearchLabels: Object {
     override static func primaryKey() -> String? {
         return "id"
     }
-    
 
-    func getFullDateString(from date: Date) -> String {
+    public func getFullDateString(from date: Date) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM.yy"
         return dateFormatter.string(from: date)

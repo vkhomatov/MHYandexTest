@@ -9,21 +9,20 @@ import UIKit
 
 class StockTableViewCell: UITableViewCell {
     
-    var logoImageView = UIImageView(frame: .zero)
-    var symbolLabel = UILabel(frame: .zero)
-    var companyLabel = UILabel(frame: .zero)
-    var priceLabel = UILabel(frame: .zero)
-    var dayPriceChangeLabel = UILabel(frame: .zero)
-    var starButton = UIButton(frame: .zero)
-    var cellHeight : CGFloat = 0
-    let bigFontSize: CGFloat = 15
-    let smallFontSize: CGFloat = 9
-    let labelHeigth: CGFloat = 22
-    var starOnImage = UIImage()
-    var starOffImage = UIImage()
-    var starButtonCallback: ((_ state: Bool) -> Void)?
+    public var logoImageView = UIImageView(frame: .zero)
+    public var symbolLabel = UILabel(frame: .zero)
+    public var companyLabel = UILabel(frame: .zero)
+    public var priceLabel = UILabel(frame: .zero)
+    public var dayPriceChangeLabel = UILabel(frame: .zero)
+    private var starButton = UIButton(frame: .zero)
+    private let bigFontSize: CGFloat = 15
+    private let smallFontSize: CGFloat = 9
+    private let labelHeigth: CGFloat = 22
+    private var starOnImage = UIImage()
+    private var starOffImage = UIImage()
+    public var starButtonCallback: ((_ state: Bool) -> Void)?
 
-    var starButtonStatus: Bool = false {
+    public var starButtonStatus: Bool = false {
         didSet {
             if starButtonStatus == true {
                 starButton.setImage(starOnImage, for: .normal)
@@ -122,7 +121,7 @@ class StockTableViewCell: UITableViewCell {
 
     }
     
-    func layoutViews() {
+    private func layoutViews() {
         logoImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4.0).isActive = true
         logoImageView.widthAnchor.constraint(equalToConstant: contentView.frame.height - 8).isActive = true
         logoImageView.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 4.0).isActive = true

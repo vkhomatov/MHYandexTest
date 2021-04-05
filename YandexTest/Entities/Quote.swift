@@ -21,9 +21,7 @@ class Quote: Object {
     @objc dynamic var regularMarketPreviousClose: Double = 0
     @objc dynamic var starStatus: Bool = false
 
-    
     var coeffColor: UIColor = UIColor.systemGreen
-    var logoImage = UIImage()
 
     var companyWebsite: String = "" {
         didSet {
@@ -52,7 +50,7 @@ class Quote: Object {
         return lhs.symbol == rhs.symbol && lhs.shortName == rhs.shortName
     }
     
-    func getCoeff() -> String {
+    public func getCoeff() -> String {
         var priceStr: String = ""
         var diff : Double = 0
         diff = regularMarketOpen - regularMarketPreviousClose
@@ -67,7 +65,7 @@ class Quote: Object {
         return priceStr + " " + "(" + procStr + "%)"
     }
     
-    func getSymbolForCurrencyCode(code: String) -> String
+    private func getSymbolForCurrencyCode(code: String) -> String
     {
         let locale = NSLocale(localeIdentifier: code)
         if let symbol = locale.displayName(forKey: NSLocale.Key.currencySymbol, value: code) {
@@ -77,16 +75,16 @@ class Quote: Object {
         }
     }
     
-    func deletingPrefix(string: String, prefix: String) -> String? {
+    private func deletingPrefix(string: String, prefix: String) -> String? {
         guard string.hasPrefix(prefix) else { return nil }
         return String(string.dropFirst(prefix.count))
     }
     
-    func getPrice() -> String {
+    public func getPrice() -> String {
         return  getSymbolForCurrencyCode(code: currency) + String(regularMarketOpen)
     }
     
-    func getCompanyName() -> String {
+    public func getCompanyName() -> String {
         return longName.count < shortName.count ? longName : shortName
     }
     

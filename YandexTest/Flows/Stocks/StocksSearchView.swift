@@ -9,45 +9,113 @@ import UIKit
 
 class StocksSearchView: UIView {
     
-    var popularLabel = UILabel(frame: .zero)
-    var yoursLabel = UILabel(frame: .zero)
-    var popularScrollView = UIScrollView(frame: .zero)
-    var yoursScrollView = UIScrollView(frame: .zero)
-    var popularLabels = [UILabel]()
-    var yoursLabels = [UILabel]()
-    var labelCallback: ((_ selectedLabelText: String) -> Void)?
+    private var popularLabel = UILabel(frame: .zero)
+    private var yoursLabel = UILabel(frame: .zero)
     
-    var popularStrings: [String] = [] {
+    private var popularScrollView = UIScrollView(frame: .zero)
+    private var yoursScrollView = UIScrollView(frame: .zero)
+    
+    private var popularLabels = [UILabel]()
+    private var yoursLabels = [UILabel]()
+    
+        
+    private var popularTopStackView = UIStackView()
+    private var popularBottomStackView = UIStackView()
+    
+    private var yoursTopStackView = UIStackView()
+    private var yoursBottomStackView = UIStackView()
+
+
+    public var labelCallback: ((_ selectedLabelText: String) -> Void)?
+    
+    private var top: Bool = true
+    
+    
+    public var newLabel: String = "" {
         didSet {
-            setPopularLabels()
-            setupTitleLabel(label: popularLabel, text: "Popular requests")
-            setupScrollView(scrollView: popularScrollView, labels: popularLabels)
-            setInteractiveElements(labels: popularLabels)
-            popularLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 20.0).isActive = true
-            popularLabel.heightAnchor.constraint(equalToConstant: 22).isActive = true
-            popularLabel.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 10.0).isActive = true
-            layoutScrollView(scrollView: popularScrollView, labels: popularLabels, capLabel: popularLabel)
+            addSearchLabel(label: newLabel)
         }
     }
     
-    var yoursStrings: [String] = [] //{
-//        didSet {
-//            setupTitleLabel(label: yoursLabel, text: "You’ve searched for this")
-//            setYoursLabels()
-//            setupScrollView(scrollView: yoursScrollView, labels: yoursLabels)
-//            setInteractiveElements(labels: yoursLabels)
-//            yoursLabel.topAnchor.constraint(equalTo: popularScrollView.bottomAnchor, constant: 30.0).isActive = true
-//            yoursLabel.heightAnchor.constraint(equalToConstant: 22).isActive = true
-//            yoursLabel.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 10.0).isActive = true
-//            layoutScrollView(scrollView: yoursScrollView, labels: yoursLabels, capLabel: yoursLabel)
-//        }
-    //}
+    public var popularStrings: [String] = [] {
+        didSet {
+            setPopularLabels()
+            setInteractiveElements(labels: popularLabels)
+            setupStackView(topStackView: popularTopStackView, bottomStackView: popularBottomStackView, labels: popularLabels, scrollView: popularScrollView)
+           // layoutStackViews(topStackView: popularTopStackView, bottomStackView: popularBottomStackView, scrollView: popularScrollView)
+            
+            setupScrollView(scrollView: popularScrollView, topStackView: popularTopStackView, bottomStackView: popularBottomStackView)
+          //  layoutScrollView(scrollView: popularScrollView, capLabel: popularLabel)
+        }
+    }
+    
+    public var yoursStrings: [String] = [] {
+        didSet {
+            setYoursLabels()
+            setInteractiveElements(labels: yoursLabels)
+            
+            setupStackView(topStackView: yoursTopStackView, bottomStackView: yoursBottomStackView, labels: yoursLabels, scrollView: yoursScrollView)
+           // layoutStackViews(topStackView: yoursTopStackView, bottomStackView: yoursBottomStackView, scrollView: yoursScrollView)
+
+            setupScrollView(scrollView: yoursScrollView, topStackView: yoursTopStackView, bottomStackView: yoursBottomStackView)
+          //  layoutScrollView(scrollView: yoursScrollView, capLabel: yoursLabel)
+        }
+    }
+    
+    
+    private func setupStackView(topStackView: UIStackView, bottomStackView: UIStackView, labels: [UILabel], scrollView: UIScrollView) {
+        
+        topStackView.distribution = .equalSpacing
+        topStackView.alignment = .lastBaseline
+        topStackView.axis = .horizontal
+        topStackView.spacing = 10
+        topStackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        bottomStackView.distribution = .equalSpacing
+        bottomStackView.alignment = .lastBaseline
+        bottomStackView.axis = .horizontal
+        bottomStackView.spacing = 10
+        bottomStackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        for num in 0..<labels.count/2 {
+            topStackView.addArrangedSubview(labels[num])
+        }
+        
+        for num in labels.count/2..<labels.count {
+            bottomStackView.addArrangedSubview(labels[num])
+        }
+
+        topStackView.sizeToFit()
+        bottomStackView.sizeToFit()
+
+        scrollView.addSubview(topStackView)
+        scrollView.addSubview(bottomStackView)
+    }
+    
+    
+    private func addSearchLabel(label: String) {
+        let label = createNewLabel(text: label)
+        yoursLabels.append(label)
+        layoutSearchLabel(label: label)
+
+        if top {
+            yoursTopStackView.addArrangedSubview(label)
+        } else {
+            yoursBottomStackView.addArrangedSubview(label)
+        }
+
+        yoursScrollView.contentSize = CGSize(width: getStackViewWidth(topStackView: yoursTopStackView, bottomStackView: yoursBottomStackView), height: 0)
+
+        top.toggle()
+    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.backgroundColor = .white
         self.addSubview(popularScrollView)
         self.addSubview(yoursScrollView)
+        setupTitleLabel(label: popularLabel, text: "Popular requests")
+        setupTitleLabel(label: yoursLabel, text: "You’ve searched for this")
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -56,58 +124,33 @@ class StocksSearchView: UIView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
+        layoutCaptionLabels()
+        
+        layoutStackViews(topStackView: yoursTopStackView, bottomStackView: yoursBottomStackView, scrollView: yoursScrollView)
+        layoutScrollView(scrollView: yoursScrollView, capLabel: yoursLabel)
+        
+        layoutStackViews(topStackView: popularTopStackView, bottomStackView: popularBottomStackView, scrollView: popularScrollView)
+        layoutScrollView(scrollView: popularScrollView, capLabel: popularLabel)
     }
     
-    func setPopularLabels() {
+    private func setPopularLabels() {
         for num in 0..<popularStrings.count {
-            popularLabels.append(createNewLabel(text: popularStrings[num]))
-            popularScrollView.addSubview(popularLabels[num])
+            let label = createNewLabel(text: popularStrings[num])
+            popularLabels.append(label)
+            layoutSearchLabel(label: label)
         }
     }
     
-    func setYoursLabels() {
-        for label in yoursScrollView.subviews {
-            for recognizer in label.gestureRecognizers ?? [] {
-                label.removeGestureRecognizer(recognizer)
-            }
-            label.removeFromSuperview()
-        }
+    private func setYoursLabels() {
         for num in 0..<yoursStrings.count {
-            yoursLabels.append(createNewLabel(text: yoursStrings[num]))
-            yoursScrollView.addSubview(yoursLabels[num])
+            let label = createNewLabel(text: yoursStrings[num])
+            yoursLabels.append(label)
+            layoutSearchLabel(label: label)
         }
     }
     
-    func setupScrollView(scrollView: UIScrollView, labels: [UILabel]) {
-        
-        var scrollWidth: CGFloat = 0
-        var labelsWidth: CGFloat = 0
-        
-        for label in labels {
-            labelsWidth += label.frame.width + 30
-        }
-        
-        if labelsWidth > self.frame.width*2 {
-            var firstLabelsW = CGFloat()
-            var secondLabelsW = CGFloat()
-            
-            for num in 0...labels.count/2 + labels.count % 2 {
-                firstLabelsW += labels[num].frame.width + 30
-            }
-            
-            for num in (labels.count/2 + labels.count % 2)..<labels.count {
-                secondLabelsW += labels[num].frame.width + 30
-            }
-            
-            scrollWidth =  firstLabelsW > secondLabelsW ? firstLabelsW + 100 : secondLabelsW + 100
-        } else {
-            for label in labels {
-                scrollWidth = (label.bounds.width + 10+30) * CGFloat(labels.count + labels.count % 2) + 100
-            }
-        }
-        
-        scrollWidth = scrollWidth > self.frame.width ? scrollWidth : self.frame.width
-        scrollView.contentSize = CGSize(width: scrollWidth, height: 0)
+    private func setupScrollView(scrollView: UIScrollView, topStackView: UIStackView, bottomStackView: UIStackView) {
+        scrollView.contentSize = CGSize(width: getStackViewWidth(topStackView: topStackView, bottomStackView: bottomStackView, coeff: 30), height: 0)
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.isScrollEnabled = true
@@ -115,7 +158,20 @@ class StocksSearchView: UIView {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
     }
     
-    func createNewLabel(text: String) -> UILabel {
+    private func getStackViewWidth(topStackView: UIStackView, bottomStackView: UIStackView, coeff: CGFloat = 0) -> CGFloat {
+
+        var topStackViewWidth: CGFloat = 0
+        var bottomStackViewWidth: CGFloat = 0
+        topStackView.arrangedSubviews.forEach {
+            topStackViewWidth += $0.frame.width + 10 + coeff
+        }
+        bottomStackView.arrangedSubviews.forEach {
+            bottomStackViewWidth += $0.frame.width + 10 + coeff
+        }
+        return topStackViewWidth > bottomStackViewWidth ? topStackViewWidth + 10 : bottomStackViewWidth + 10
+    }
+    
+    private func createNewLabel(text: String) -> UILabel {
         let searchLabel = UILabel(frame: .zero)
         searchLabel.textAlignment = .center
         searchLabel.font = .systemFont(ofSize: 12, weight: .regular)
@@ -130,7 +186,7 @@ class StocksSearchView: UIView {
         return searchLabel
     }
     
-    func setupTitleLabel(label: UILabel, text: String) {
+    private func setupTitleLabel(label: UILabel, text: String) {
         label.textAlignment = .center
         label.font = .systemFont(ofSize: 20, weight: .bold)
         label.textColor = UIColor.black
@@ -141,49 +197,41 @@ class StocksSearchView: UIView {
         self.addSubview(label)
     }
     
-    
-    private func layoutScrollView(scrollView: UIScrollView, labels: [UILabel], capLabel: UILabel) {
+    private func layoutSearchLabel(label: UILabel) {
+        label.heightAnchor.constraint(equalToConstant: 35).isActive = true
+        label.widthAnchor.constraint(equalToConstant: label.frame.width+30).isActive = true
+    }
+   
+    private func layoutCaptionLabels() {
+        popularLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 20.0).isActive = true
+        popularLabel.heightAnchor.constraint(equalToConstant: 22).isActive = true
+        popularLabel.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 10.0).isActive = true
         
+        yoursLabel.topAnchor.constraint(equalTo: popularScrollView.bottomAnchor, constant: 30.0).isActive = true
+        yoursLabel.heightAnchor.constraint(equalToConstant: 22).isActive = true
+        yoursLabel.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 10.0).isActive = true
+    }
+    
+    private func layoutScrollView(scrollView: UIScrollView, capLabel: UILabel) {
         scrollView.topAnchor.constraint(equalTo: capLabel.bottomAnchor, constant: 5.0).isActive = true
         scrollView.heightAnchor.constraint(equalToConstant: 80).isActive = true
         scrollView.leftAnchor.constraint(equalTo: capLabel.leftAnchor).isActive = true
         scrollView.rightAnchor.constraint(equalTo: self.rightAnchor).isActive = true
+    }
+    
+    private func layoutStackViews(topStackView: UIStackView, bottomStackView: UIStackView, scrollView: UIScrollView) {
+        topStackView.leftAnchor.constraint(equalTo: scrollView.leftAnchor, constant: 5.0).isActive = true
+        topStackView.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 5.0).isActive = true
         
-        if labels.count == 1 {
-            labels[0].leftAnchor.constraint(equalTo: scrollView.leftAnchor, constant: 5.0).isActive = true
-            labels[0].topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 5.0).isActive = true
-            labels[0].heightAnchor.constraint(equalToConstant: 35).isActive = true
-            labels[0].widthAnchor.constraint(equalToConstant: labels[0].frame.width+30).isActive = true
-        } else {
-            for label in 0..<labels.count/2 {
-                labels[label].topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 5.0).isActive = true
-                labels[label].heightAnchor.constraint(equalToConstant: 35).isActive = true
-                labels[label].widthAnchor.constraint(equalToConstant: labels[label].frame.width+30).isActive = true
-                if label == 0 {
-                    labels[label].leftAnchor.constraint(equalTo: scrollView.leftAnchor, constant: 5.0).isActive = true
-                } else {
-                    labels[label].leftAnchor.constraint(equalTo: labels[label-1].rightAnchor, constant: 5.0).isActive = true
-                }
-            }
-            
-            for label in labels.count/2..<labels.count {
-                labels[label].topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 45.0).isActive = true
-                labels[label].heightAnchor.constraint(equalToConstant: 35).isActive = true
-                labels[label].widthAnchor.constraint(equalToConstant: labels[label].frame.width+30).isActive = true
-                if label == labels.count/2 {
-                    labels[label].leftAnchor.constraint(equalTo: scrollView.leftAnchor, constant: 5.0).isActive = true
-                } else if label > 0 {
-                    labels[label].leftAnchor.constraint(equalTo: labels[label-1].rightAnchor, constant: 5.0).isActive = true
-                }
-            }
-        }
+        bottomStackView.leftAnchor.constraint(equalTo: scrollView.leftAnchor, constant: 5.0).isActive = true
+        bottomStackView.topAnchor.constraint(equalTo: topStackView.bottomAnchor, constant: 5.0).isActive = true
     }
     
     private func setInteractiveElements(labels: [UILabel]) {
-        for label in labels {
+        labels.forEach {
             let tap = UITapGestureRecognizer(target: self, action: #selector(self.labelPressed(sender:)))
-            label.isUserInteractionEnabled = true
-            label.addGestureRecognizer(tap)
+            $0.isUserInteractionEnabled = true
+            $0.addGestureRecognizer(tap)
         }
     }
     
