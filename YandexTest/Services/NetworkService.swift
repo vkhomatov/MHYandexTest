@@ -30,7 +30,7 @@ class NetworkService {
         return session
     }()
     
-    func getQuoteCollections(start: Int = 1, completion: ((Swift.Result<[Quote], Error>) -> Void)? = nil) {
+    public func getQuoteCollections(start: Int = 1, completion: ((Swift.Result<[Quote], Error>) -> Void)? = nil) {
         urlConstructor.path = "/api/v1/co/collections"
         
         let params: Parameters = [
@@ -55,17 +55,13 @@ class NetworkService {
         }
     }
     
-    func getQuotes(symbol: String, completion: ((Swift.Result<[Quote], Error>) -> Void)? = nil) {
+    public func getQuotes(symbol: String, completion: ((Swift.Result<[Quote], Error>) -> Void)? = nil) {
         
         urlConstructor.path = "/api/v1/qu/quote"
-        
-        let params: Parameters = [
-            "symbol" : symbol]
-        
+        let params: Parameters = ["symbol" : symbol]
         guard let url = urlConstructor.url else { return }
         
         NetworkService.session.request(url, method: .get, parameters: params).responseJSON { response in
-            
             switch response.result {
             case let .success(data):
                 let json = JSON(data)
@@ -82,18 +78,13 @@ class NetworkService {
     }
     
     
-    func getCompanyInfo(symbol: String, completion: ((Swift.Result<Quote, Error>) -> Void)? = nil) {
+    public func getCompanyInfo(symbol: String, completion: ((Swift.Result<Quote, Error>) -> Void)? = nil) {
         
         urlConstructor.path = "/api/v1/qu/quote/profile"
-        
-        let params: Parameters = [
-            "symbol" : symbol]
-        
+        let params: Parameters = ["symbol" : symbol]
         guard let url = urlConstructor.url else { return }
         
-        
         NetworkService.session.request(url, method: .get, parameters: params).responseJSON { response in
-            
             switch response.result {
             case let .success(data):
                 let json = JSON(data)
@@ -108,19 +99,17 @@ class NetworkService {
         }
     }
     
-    func getMostWatchedLabels(completion: ((Swift.Result<[LabelsAndFavourites], Error>) -> Void)? = nil) {
+    public func getMostWatchedLabels(completion: ((Swift.Result<[SearchLabels], Error>) -> Void)? = nil) {
         
         urlConstructor.path = "/api/v1/tr/trending"
-        
         guard let url = urlConstructor.url else { return }
         
         NetworkService.session.request(url, method: .get, parameters: nil).responseJSON { response in
-            
             switch response.result {
             case let .success(data):
                 let json = JSON(data)
                 let mostJSONs = json.arrayValue
-                let most = mostJSONs.map { LabelsAndFavourites(from: $0) }
+                let most = mostJSONs.map { SearchLabels(from: $0) }
                 completion?(.success(most))
             case let .failure(error):
                 completion?(.failure(error))

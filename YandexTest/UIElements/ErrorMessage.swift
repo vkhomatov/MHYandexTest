@@ -12,8 +12,8 @@ class ErrorMessage: UIView {
     private var parentView = UIView()
     private var errorMessageView = UIView()
     private var errorMessageLabel = UILabel()
-    var errorHeight: CGFloat = 60
-    var topHeight: CGFloat = 5
+    private var errorHeight: CGFloat = 60
+    private var topHeight: CGFloat = 5
 
 
     convenience init(view: UIView) {
@@ -86,13 +86,15 @@ class ErrorMessage: UIView {
         }
     }
     
-    func showError(reverse: Bool, message: String, delay: Double) {
+    func showError(reverse: Bool = true, message: String, delay: Double) {
+        DispatchQueue.main.async {
         self.errorMessageLabel.text = message
-        self.animationView(reverse: reverse, duration: 1.0, delay: delay, offsetY: errorHeight-6, opacity: 1.0)
+            self.animationView(reverse: reverse, duration: 1.0, delay: delay, offsetY: self.errorHeight-6, opacity: 1.0)
+        }
     }
     
     
-    func newIphoneModel() -> Bool {
+    private func newIphoneModel() -> Bool {
 
         let deviceModel = UIDevice.current.name
         if deviceModel.contains("X") || deviceModel.contains("11") || deviceModel.contains("12")  {

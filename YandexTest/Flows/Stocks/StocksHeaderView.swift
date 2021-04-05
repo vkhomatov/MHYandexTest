@@ -9,29 +9,30 @@ import UIKit
 
 class StocksHeaderView: UIView {
     
-    var stockFontSize: CGFloat = 28
-    var favouriteFontSize: CGFloat = 16
-    var stockFontColor: UIColor = .black
-    var favouriteFontColor: UIColor = .lightGray
+    private var stockFontSize: CGFloat = 32
+    private var favouriteFontSize: CGFloat = 18
+    private var stockFontColor: UIColor = .black
+    private  var favouriteFontColor: UIColor = .lightGray
     
-    var stocksButton = UIButton(frame: .zero)
-    var favouriteButton = UIButton(frame: .zero)
-    var state: State = .stocks {
+    private var stocksButton = UIButton(frame: .zero)
+    private var favouriteButton = UIButton(frame: .zero)
+    
+    public var state: State = .stocks {
         didSet {
             setupViews(state: state)
             layoutViews(state: state)
         }
     }
-    var buttonCallback: ((_ state: State) -> Void)?
-    var stackView = UIStackView()
-    var stackLabel = UILabel(frame: .zero)
+    
+    public var buttonCallback: ((_ state: State) -> Void)?
+    private var stackView = UIStackView()
+    private var stackLabel = UILabel(frame: .zero)
     
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupViews(state: state)
         stocksButton.isUserInteractionEnabled = false
-
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -71,12 +72,12 @@ class StocksHeaderView: UIView {
         stackView.addArrangedSubview(stocksButton)
         stackView.addArrangedSubview(favouriteButton)
         stackLabel.removeFromSuperview()
-
+        
         self.addSubview(stackView)
             
         } else {
             stackLabel.textAlignment = .left
-            stackLabel.font = .systemFont(ofSize: favouriteFontSize+4, weight: .bold)
+            stackLabel.font = .systemFont(ofSize: 32, weight: .bold)
             stackLabel.textColor = UIColor.black
             stackLabel.numberOfLines = 1
             stackLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -93,7 +94,9 @@ class StocksHeaderView: UIView {
         stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -10.0).isActive = true
         } else {
             stackLabel.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 12.0).isActive = true
-            stackLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor, constant: 0).isActive = true
+           // stackLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor, constant: 0).isActive = true
+            stackLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -10.0).isActive = true
+
         }
         
     }
@@ -124,12 +127,13 @@ class StocksHeaderView: UIView {
         if let callback = self.buttonCallback {
             callback(state)
         }
+        
         self.setupViews(state: state)
     }
     
     
     enum State: String {
-        case stocks = "Stocks", favourite = "Favourite", search
+        case stocks = "Stocks", favourite = "Favourite", search = "Search"
     }
     
     
