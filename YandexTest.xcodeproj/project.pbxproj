@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		58BD303C261097F800484AA6 /* LabelsAndFavourites.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58BD303B261097F800484AA6 /* LabelsAndFavourites.swift */; };
+		58BD303C261097F800484AA6 /* SearchLabels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58BD303B261097F800484AA6 /* SearchLabels.swift */; };
 		58BD304126109ABD00484AA6 /* Realm in Frameworks */ = {isa = PBXBuildFile; productRef = 58BD304026109ABD00484AA6 /* Realm */; };
 		58BD304326109ABD00484AA6 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 58BD304226109ABD00484AA6 /* RealmSwift */; };
 		58BD304626109CD800484AA6 /* RealmService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58BD304526109CD800484AA6 /* RealmService.swift */; };
@@ -31,7 +31,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		58BD303B261097F800484AA6 /* LabelsAndFavourites.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelsAndFavourites.swift; sourceTree = "<group>"; };
+		58BD303B261097F800484AA6 /* SearchLabels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLabels.swift; sourceTree = "<group>"; };
 		58BD304526109CD800484AA6 /* RealmService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealmService.swift; sourceTree = "<group>"; };
 		58DBCB02260A8909002AEFFC /* YandexTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YandexTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		58DBCB05260A8909002AEFFC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -117,7 +117,7 @@
 			isa = PBXGroup;
 			children = (
 				58DBCBC4260D6948002AEFFC /* Quote.swift */,
-				58BD303B261097F800484AA6 /* LabelsAndFavourites.swift */,
+				58BD303B261097F800484AA6 /* SearchLabels.swift */,
 			);
 			path = Entities;
 			sourceTree = "<group>";
@@ -245,7 +245,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				58BD303C261097F800484AA6 /* LabelsAndFavourites.swift in Sources */,
+				58BD303C261097F800484AA6 /* SearchLabels.swift in Sources */,
 				58DBCBCC260D8127002AEFFC /* StocksModel.swift in Sources */,
 				58DBCBA6260C5B3C002AEFFC /* ErrorMessage.swift in Sources */,
 				58BD304626109CD800484AA6 /* RealmService.swift in Sources */,
